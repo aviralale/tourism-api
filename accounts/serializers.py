@@ -14,7 +14,10 @@ from .models import (
 )
 
 
-# CustomUser Serializer
+from rest_framework import serializers
+from .models import CustomUser, CustomUserProfile, Guide, EventManager
+
+
 class CustomUserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=True)
 
@@ -60,11 +63,10 @@ class CustomUserSerializer(serializers.ModelSerializer):
         return instance
 
 
-# CustomUserProfile Serializer
 class CustomUserProfileSerializer(serializers.ModelSerializer):
     user = CustomUserSerializer()
-    is_guide = serializers.BooleanField()
-    is_event_manager = serializers.BooleanField()
+    is_guide = serializers.BooleanField(default=False)
+    is_event_manager = serializers.BooleanField(default=False)
 
     class Meta:
         model = CustomUserProfile
@@ -76,6 +78,10 @@ class CustomUserProfileSerializer(serializers.ModelSerializer):
         user_serializer.is_valid(raise_exception=True)
         user = user_serializer.save()
         user_profile = CustomUserProfile.objects.create(user=user, **validated_data)
+        if validated_data.get('is_guide'):
+            Guide.objects.create(user_profile=user_profile)
+        if validated_data.get('is_event_manager'):
+            EventManager.objects.create(user_profile=user_profile)
         return user_profile
 
     def update(self, instance, validated_data):

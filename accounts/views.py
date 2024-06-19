@@ -13,13 +13,10 @@ from .models import (
     EventCompleted,
 )
 from .serializers import (
-    CustomUserSerializer,
     CustomUserProfileSerializer,
     TouristSerializer,
     GuideSerializer,
-    GuideRatingSerializer,
     EventManagerSerializer,
-    EventManagerRatingSerializer,
     TourSerializer,
     TouristCompletedTourSerializer,
     EventSerializer,
@@ -27,12 +24,23 @@ from .serializers import (
 )
 
 
-# User Signup View
 class SignupView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
-        serializer = CustomUserProfileSerializer(data=request.data)
+        user_data = {
+            "user": {
+                "email": request.data.get("email"),
+                "username": request.data.get("username"),
+                "first_name": request.data.get("first_name"),
+                "last_name": request.data.get("last_name"),
+                "password": request.data.get("password"),
+                "pfp": request.data.get("pfp"),
+            },
+            "is_guide": request.data.get("is_guide", False),
+            "is_event_manager": request.data.get("is_event_manager", False)
+        }
+        serializer = CustomUserProfileSerializer(data=user_data)
         if serializer.is_valid():
             user_profile = serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
