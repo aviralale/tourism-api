@@ -5,10 +5,6 @@ from .models import (
     Guide,
     Tourist,
     EventManager,
-    Tour,
-    TouristCompletedTour,
-    Event,
-    EventCompleted,
     GuideRating,
     EventManagerRating,
 )
@@ -114,58 +110,6 @@ class EventManagerAdmin(admin.ModelAdmin):
     )
 
 
-class TourAdmin(admin.ModelAdmin):
-    model = Tour
-    list_display = ("title", "guide", "start_date", "end_date")
-    search_fields = (
-        "title",
-        "guide__user_profile__user__email",
-        "guide__user_profile__user__username",
-        "guide__user_profile__user__first_name",
-        "guide__user_profile__user__last_name",
-    )
-
-
-class TouristCompletedTourAdmin(admin.ModelAdmin):
-    model = TouristCompletedTour
-    list_display = ("tourist", "tour", "guide", "completed_at")
-    search_fields = (
-        "tourist__user_profile__user__email",
-        "tourist__user_profile__user__username",
-        "tourist__user_profile__user__first_name",
-        "tourist__user_profile__user__last_name",
-        "tour__title",
-        "guide__user_profile__user__first_name",
-        "guide__user_profile__user__last_name",
-    )
-
-
-class EventAdmin(admin.ModelAdmin):
-    model = Event
-    list_display = ("title", "event_manager", "start_date", "end_date")
-    search_fields = (
-        "title",
-        "event_manager__user_profile__user__email",
-        "event_manager__user_profile__user__username",
-        "event_manager__user_profile__user__first_name",
-        "event_manager__user_profile__user__last_name",
-    )
-
-
-class EventCompletedAdmin(admin.ModelAdmin):
-    model = EventCompleted
-    list_display = ("tourist", "event", "event_manager", "completed_at")
-    search_fields = (
-        "tourist__user_profile__user__email",
-        "tourist__user_profile__user__username",
-        "tourist__user_profile__user__first_name",
-        "tourist__user_profile__user__last_name",
-        "event__title",
-        "event_manager__user_profile__user__first_name",
-        "event_manager__user_profile__user__last_name",
-    )
-
-
 class GuideRatingAdmin(admin.ModelAdmin):
     model = GuideRating
     list_display = ("guide", "tourist", "value")
@@ -201,9 +145,5 @@ admin.site.register(CustomUserProfile, CustomUserProfileAdmin)
 admin.site.register(Guide, GuideAdmin)
 admin.site.register(Tourist, TouristAdmin)
 admin.site.register(EventManager, EventManagerAdmin)
-admin.site.register(Tour, TourAdmin)
-admin.site.register(TouristCompletedTour, TouristCompletedTourAdmin)
-admin.site.register(Event, EventAdmin)
-admin.site.register(EventCompleted, EventCompletedAdmin)
 admin.site.register(GuideRating, GuideRatingAdmin)
 admin.site.register(EventManagerRating, EventManagerRatingAdmin)

@@ -7,19 +7,13 @@ from .models import (
     GuideRating,
     EventManager,
     EventManagerRating,
-    Tour,
-    TouristCompletedTour,
-    Event,
-    EventCompleted,
 )
-
-
-from rest_framework import serializers
-from .models import CustomUser, CustomUserProfile, Guide, EventManager
+from events.serializers import EventManagerRatingSerializer
+from tours.serializers import GuideRatingSerializer
 
 
 class CustomUserSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True, required=True)
+    password = serializers.CharField(write_only=True, required=True, min_length=8)
 
     class Meta:
         model = CustomUser
@@ -36,15 +30,6 @@ class CustomUserSerializer(serializers.ModelSerializer):
             "password",
         ]
         extra_kwargs = {"password": {"write_only": True}}
-
-    def validate_password(self, value):
-        if not value:
-            raise serializers.ValidationError("Password is required.")
-        if len(value) < 8:
-            raise serializers.ValidationError(
-                "Password must be at least 8 characters long."
-            )
-        return value
 
     def create(self, validated_data):
         password = validated_data.pop("password")
@@ -78,9 +63,9 @@ class CustomUserProfileSerializer(serializers.ModelSerializer):
         user_serializer.is_valid(raise_exception=True)
         user = user_serializer.save()
         user_profile = CustomUserProfile.objects.create(user=user, **validated_data)
-        if validated_data.get('is_guide'):
+        if validated_data.get("is_guide"):
             Guide.objects.create(user_profile=user_profile)
-        if validated_data.get('is_event_manager'):
+        if validated_data.get("is_event_manager"):
             EventManager.objects.create(user_profile=user_profile)
         return user_profile
 
@@ -100,7 +85,6 @@ class CustomUserProfileSerializer(serializers.ModelSerializer):
         return instance
 
 
-# Tourist Serializer
 class TouristSerializer(serializers.ModelSerializer):
     user_profile = CustomUserProfileSerializer()
 
@@ -108,8 +92,23 @@ class TouristSerializer(serializers.ModelSerializer):
         model = Tourist
         fields = ["id", "user_profile"]
 
+    def create(self, validated_data):
+        user_profile_data = validated_data.pop("user_profile")
+        user_profile_serializer = CustomUserProfileSerializer(data=user_profile_data)
+        user_profile_serializer.is_valid(raise_exception=True)
+        user_profile = user_profile_serializer.save()
+        return Tourist.objects.create(user_profile=user_profile)
 
-# Guide Serializer
+    def update(self, instance, validated_data):
+        user_profile_data = validated_data.pop("user_profile")
+        user_profile_serializer = CustomUserProfileSerializer(
+            instance.user_profile, data=user_profile_data
+        )
+        user_profile_serializer.is_valid(raise_exception=True)
+        user_profile_serializer.save()
+        return instance
+
+
 class GuideSerializer(serializers.ModelSerializer):
     user_profile = CustomUserProfileSerializer()
     average_rating = serializers.FloatField(source="average_rating", read_only=True)
@@ -130,17 +129,6 @@ class GuideSerializer(serializers.ModelSerializer):
         return GuideRatingSerializer(ratings, many=True).data
 
 
-# GuideRating Serializer
-class GuideRatingSerializer(serializers.ModelSerializer):
-    guide = GuideSerializer()
-    tourist = TouristSerializer()
-
-    class Meta:
-        model = GuideRating
-        fields = ["id", "guide", "tourist", "value"]
-
-
-# EventManager Serializer
 class EventManagerSerializer(serializers.ModelSerializer):
     user_profile = CustomUserProfileSerializer()
     average_rating = serializers.FloatField(source="average_rating", read_only=True)
@@ -153,64 +141,3 @@ class EventManagerSerializer(serializers.ModelSerializer):
     def get_ratings(self, obj):
         ratings = EventManagerRating.objects.filter(eventmanager=obj)
         return EventManagerRatingSerializer(ratings, many=True).data
-
-
-# EventManagerRating Serializer
-class EventManagerRatingSerializer(serializers.ModelSerializer):
-    eventmanager = EventManagerSerializer()
-    tourist = TouristSerializer()
-
-    class Meta:
-        model = EventManagerRating
-        fields = ["id", "eventmanager", "tourist", "value"]
-
-
-# Tour Serializer
-class TourSerializer(serializers.ModelSerializer):
-    guide = GuideSerializer()
-
-    class Meta:
-        model = Tour
-        fields = ["id", "guide", "title", "description", "start_date", "end_date"]
-
-
-# TouristCompletedTour Serializer
-class TouristCompletedTourSerializer(serializers.ModelSerializer):
-    tourist = TouristSerializer()
-    tour = TourSerializer()
-    guide = GuideSerializer()
-
-    class Meta:
-        model = TouristCompletedTour
-        fields = ["id", "tourist", "tour", "guide", "completed_at"]
-
-
-# Event Serializer
-class EventSerializer(serializers.ModelSerializer):
-    event_manager = EventManagerSerializer()
-
-    class Meta:
-        model = Event
-        fields = [
-            "id",
-            "event_manager",
-            "title",
-            "photo1",
-            "photo2",
-            "photo3",
-            "video_file",
-            "description",
-            "start_date",
-            "end_date",
-        ]
-
-
-# EventCompleted Serializer
-class EventCompletedSerializer(serializers.ModelSerializer):
-    tourist = TouristSerializer()
-    event = EventSerializer()
-    event_manager = EventManagerSerializer()
-
-    class Meta:
-        model = EventCompleted
-        fields = ["id", "tourist", "event", "event_manager", "completed_at"]

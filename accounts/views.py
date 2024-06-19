@@ -7,20 +7,12 @@ from .models import (
     Guide,
     Tourist,
     EventManager,
-    Tour,
-    TouristCompletedTour,
-    Event,
-    EventCompleted,
 )
 from .serializers import (
     CustomUserProfileSerializer,
     TouristSerializer,
     GuideSerializer,
     EventManagerSerializer,
-    TourSerializer,
-    TouristCompletedTourSerializer,
-    EventSerializer,
-    EventCompletedSerializer,
 )
 
 
@@ -38,7 +30,7 @@ class SignupView(APIView):
                 "pfp": request.data.get("pfp"),
             },
             "is_guide": request.data.get("is_guide", False),
-            "is_event_manager": request.data.get("is_event_manager", False)
+            "is_event_manager": request.data.get("is_event_manager", False),
         }
         serializer = CustomUserProfileSerializer(data=user_data)
         if serializer.is_valid():
@@ -107,80 +99,3 @@ class EventManagerView(APIView):
             event_managers = EventManager.objects.all()
             serializer = EventManagerSerializer(event_managers, many=True)
         return Response(serializer.data)
-
-
-# Tour View
-class TourView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request, pk=None):
-        if pk:
-            tour = Tour.objects.get(pk=pk)
-            serializer = TourSerializer(tour)
-        else:
-            tours = Tour.objects.all()
-            serializer = TourSerializer(tours, many=True)
-        return Response(serializer.data)
-
-    def post(self, request):
-        serializer = TourSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-# Tourist Completed Tour View
-class TouristCompletedTourView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request, pk=None):
-        if pk:
-            completed_tour = TouristCompletedTour.objects.get(pk=pk)
-            serializer = TouristCompletedTourSerializer(completed_tour)
-        else:
-            completed_tours = TouristCompletedTour.objects.all()
-            serializer = TouristCompletedTourSerializer(completed_tours, many=True)
-        return Response(serializer.data)
-
-
-# Event View
-class EventView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request, pk=None):
-        if pk:
-            event = Event.objects.get(pk=pk)
-            serializer = EventSerializer(event)
-        else:
-            events = Event.objects.all()
-            serializer = EventSerializer(events, many=True)
-        return Response(serializer.data)
-
-    def post(self, request):
-        serializer = EventSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-# Event Completed View
-class EventCompletedView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request, pk=None):
-        if pk:
-            completed_event = EventCompleted.objects.get(pk=pk)
-            serializer = EventCompletedSerializer(completed_event)
-        else:
-            completed_events = EventCompleted.objects.all()
-            serializer = EventCompletedSerializer(completed_events, many=True)
-        return Response(serializer.data)
-
-    def post(self, request):
-        serializer = EventCompletedSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
