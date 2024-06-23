@@ -50,23 +50,17 @@ class CustomUserSerializer(serializers.ModelSerializer):
 
 class CustomUserProfileSerializer(serializers.ModelSerializer):
     user = CustomUserSerializer()
-    is_guide = serializers.BooleanField(default=False)
-    is_event_manager = serializers.BooleanField(default=False)
 
     class Meta:
         model = CustomUserProfile
-        fields = ["id", "user", "is_guide", "is_event_manager"]
+        fields = ['user', 'is_guide', 'is_event_manager']
 
     def create(self, validated_data):
-        user_data = validated_data.pop("user")
+        user_data = validated_data.pop('user')
         user_serializer = CustomUserSerializer(data=user_data)
         user_serializer.is_valid(raise_exception=True)
         user = user_serializer.save()
         user_profile = CustomUserProfile.objects.create(user=user, **validated_data)
-        if validated_data.get("is_guide"):
-            Guide.objects.create(user_profile=user_profile)
-        if validated_data.get("is_event_manager"):
-            EventManager.objects.create(user_profile=user_profile)
         return user_profile
 
     def update(self, instance, validated_data):
@@ -111,7 +105,7 @@ class TouristSerializer(serializers.ModelSerializer):
 
 class GuideSerializer(serializers.ModelSerializer):
     user_profile = CustomUserProfileSerializer()
-    average_rating = serializers.FloatField(source="average_rating", read_only=True)
+    average_rating = serializers.FloatField(read_only=True)
     ratings = serializers.SerializerMethodField()
 
     class Meta:
@@ -131,7 +125,7 @@ class GuideSerializer(serializers.ModelSerializer):
 
 class EventManagerSerializer(serializers.ModelSerializer):
     user_profile = CustomUserProfileSerializer()
-    average_rating = serializers.FloatField(source="average_rating", read_only=True)
+    average_rating = serializers.FloatField(read_only=True)
     ratings = serializers.SerializerMethodField()
 
     class Meta:

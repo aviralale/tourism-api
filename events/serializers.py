@@ -1,7 +1,8 @@
 from rest_framework import serializers
-from events.models import Event, EventManagerRating, EventCompleted
+from events.models import Event, EventCompleted
 from accounts.models import (
     CustomUserProfile,
+    EventManagerRating,
 )  # Import the model instead of the serializer
 
 

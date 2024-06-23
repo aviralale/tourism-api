@@ -1,7 +1,6 @@
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from accounts.models import EventManager, Tourist
 
 
 class Event(models.Model):
@@ -33,22 +32,6 @@ class EventCompleted(models.Model):
 
     def __str__(self):
         return f"{self.tourist} completed {self.event} with {self.event_manager}"
-
-
-class EventManagerRating(models.Model):
-    event = models.ForeignKey(
-        Event, related_name="event_manager_ratings", on_delete=models.CASCADE
-    )
-    eventmanager = models.ForeignKey(
-        EventManager, related_name="event_manager_ratings", on_delete=models.CASCADE
-    )
-    tourist = models.ForeignKey(
-        Tourist, related_name="event_manager_ratings", on_delete=models.CASCADE
-    )
-    value = models.FloatField()
-
-    def __str__(self):
-        return f"Rating {self.value} for {self.guide} by {self.tourist}"
 
 
 @receiver(post_save, sender=EventCompleted)

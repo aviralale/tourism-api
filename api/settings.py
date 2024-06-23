@@ -42,6 +42,9 @@ INSTALLED_APPS = [
     "accounts",
     "events",
     "tours",
+    "chat",
+    "corsheaders",
+    'rest_framework_simplejwt.token_blacklist',
 ]
 
 MIDDLEWARE = [
