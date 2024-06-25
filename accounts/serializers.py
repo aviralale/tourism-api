@@ -12,6 +12,7 @@ from events.serializers import EventManagerRatingSerializer
 from tours.serializers import GuideRatingSerializer
 
 
+
 class CustomUserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=True, min_length=8)
 
@@ -28,6 +29,8 @@ class CustomUserSerializer(serializers.ModelSerializer):
             "created_at",
             "pfp",
             "password",
+            "is_guide",
+            "is_event_manager",  # Include the new fields here
         ]
         extra_kwargs = {"password": {"write_only": True}}
 
@@ -44,6 +47,8 @@ class CustomUserSerializer(serializers.ModelSerializer):
         if "password" in validated_data:
             instance.set_password(validated_data["password"])
         instance.pfp = validated_data.get("pfp", instance.pfp)
+        instance.is_guide = validated_data.get("is_guide", instance.is_guide)
+        instance.is_event_manager = validated_data.get("is_event_manager", instance.is_event_manager)
         instance.save()
         return instance
 
@@ -60,6 +65,18 @@ class CustomUserProfileSerializer(serializers.ModelSerializer):
         user_serializer = CustomUserSerializer(data=user_data)
         user_serializer.is_valid(raise_exception=True)
         user = user_serializer.save()
+
+        # Assign is_guide and is_event_manager based on input or defaults
+        is_guide = validated_data.pop('is_guide', False)
+        is_event_manager = validated_data.pop('is_event_manager', False)
+
+        if is_guide:
+            Guide.objects.create(user_profile=user)
+        elif is_event_manager:
+            EventManager.objects.create(user_profile=user)
+        else:
+            Tourist.objects.create(user_profile=user)
+
         user_profile = CustomUserProfile.objects.create(user=user, **validated_data)
         return user_profile
 
@@ -77,6 +94,8 @@ class CustomUserProfileSerializer(serializers.ModelSerializer):
         )
         instance.save()
         return instance
+
+
 
 
 class TouristSerializer(serializers.ModelSerializer):

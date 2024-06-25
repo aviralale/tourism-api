@@ -18,6 +18,10 @@ class CustomUserManager(BaseUserManager):
         user = self.model(email=email, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
+        
+        # Create CustomUserProfile for the user
+        CustomUserProfile.objects.create(user=user)
+        
         return user
 
     def create_superuser(self, email, password, **extra_fields):
@@ -25,6 +29,7 @@ class CustomUserManager(BaseUserManager):
         extra_fields.setdefault("is_superuser", True)
         extra_fields.setdefault("is_active", True)
         return self.create_user(email, password, **extra_fields)
+
 
 
 class CustomUser(AbstractBaseUser, PermissionsMixin):
@@ -41,9 +46,10 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     is_superuser = models.BooleanField(default=False)
+    is_guide = models.BooleanField(default=False)
+    is_event_manager = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-
     objects = CustomUserManager()
 
     USERNAME_FIELD = "email"
@@ -57,6 +63,7 @@ class CustomUserProfile(models.Model):
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
     is_guide = models.BooleanField(default=False)
     is_event_manager = models.BooleanField(default=False)
+
 
     def __str__(self):
         return f"{self.user.first_name} {self.user.last_name}"
